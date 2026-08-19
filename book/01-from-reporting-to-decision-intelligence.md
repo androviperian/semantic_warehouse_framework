@@ -2,21 +2,21 @@
 
 For most of the history of data warehousing, the central problem was straightforward to describe even when it was difficult to implement:
 
-> Bring data from many operational systems together, reconcile it, preserve enough history, and make it easy for people to analyze the business.
+> Bring data from many operational systems together, reconcile it, preserve history, and make the business easy to analyze.
 
-That problem produced some of the most durable ideas in data architecture. Enterprise integration gave organizations a consistent view across source systems. Dimensional modeling made analytical queries understandable and fast. Historized models made it possible to preserve changes without continually redesigning the warehouse.
+That problem produced some of the most durable ideas in data architecture. Enterprise integration created consistent views across source systems. Dimensional modeling made analytical queries intuitive. Historized models preserved change. Semantic layers gave business measures stable definitions.
 
 Those ideas still matter. The problem is not that traditional warehousing stopped working.
 
 The problem is that **the job expected of the warehouse is expanding**.
 
-A finance dashboard may need to answer:
+A finance dashboard may ask:
 
 > What was revenue last quarter?
 
 A sales dashboard may ask:
 
-> What is the current pipeline by region and stage?
+> What is pipeline by region and stage?
 
 A customer-success dashboard may ask:
 
@@ -24,21 +24,23 @@ A customer-success dashboard may ask:
 
 These are analytical questions. They are naturally expressed as measures sliced by dimensions and time.
 
-Decision intelligence begins when the next question is asked.
+Decision intelligence begins when the next questions arrive:
 
-> Why?
+> Why did it change?
 
-And then the next one.
+> What in the business produced that outcome?
 
 > What should we do about it?
 
-Those two questions change what information the analytical platform must preserve.
+> What happens if we change one of the drivers?
+
+Answering those questions reliably requires more than access to data. It requires **business understanding, semantic meaning, and evidence**, all interpreted in the correct temporal context.
 
 ---
 
-## 1.1 A simple question becomes a chain of reasoning
+## 1.1 A number is the beginning of the investigation
 
-Imagine that an executive sees the following number on Monday morning:
+Imagine an executive sees the following number on Monday morning:
 
 ```text
 ARR
@@ -48,31 +50,35 @@ This month        ₹92 Cr
 Change             -8%
 ```
 
-A reporting system has already done something valuable. It has transformed millions of operational records into a trusted business measurement.
+The reporting system has already done something valuable. It has transformed operational complexity into a trusted business measurement.
 
-But the number immediately creates another question:
+But the measurement immediately creates another question:
 
 > Why did ARR fall by 8%?
 
-A KPI decomposition might show:
+A KPI decomposition may show:
 
-```text
-                         ARR CHANGE
-                            -₹8 Cr
-                              │
-          ┌───────────────────┼───────────────────┐
-          ▼                   ▼                   ▼
-        Churn             Contraction             FX
-        -₹5 Cr              -₹2 Cr              -₹1 Cr
+```mermaid
+flowchart TB
+    ARR["ARR change<br/><b>-₹8 Cr</b>"]
+    CH["Churn<br/><b>-₹5 Cr</b>"]
+    CO["Contraction<br/><b>-₹2 Cr</b>"]
+    FX["FX<br/><b>-₹1 Cr</b>"]
+
+    ARR --> CH
+    ARR --> CO
+    ARR --> FX
 ```
 
-Now the executive knows **which business drivers** explain the movement.
+**Figure 1.1 — A metric movement decomposed into business drivers.**
 
-But that creates another question:
+The executive now knows *which drivers* mathematically explain the movement. But that is not yet a business explanation.
+
+The next question is:
 
 > Why did churn increase?
 
-The analytical system may discover:
+Suppose dimensional analysis shows:
 
 ```text
 Churn ARR = -₹5 Cr
@@ -82,76 +88,41 @@ SMB Germany              -₹0.4 Cr
 Other regions            -₹1.5 Cr
 ```
 
-Another question follows:
+Now the questions become more operational:
 
 > Which customers drove Enterprise Germany churn?
 
-Then:
-
 > What happened to those customers before they churned?
 
-Then:
+> Did they share a product, provider, account owner, implementation team, payroll problem, or process failure?
 
-> Did they share a product, provider, account owner, implementation team, payroll issue, or process failure?
+And finally:
 
-Then perhaps:
+> If the operational problem had been reduced by half, what would ARR have looked like?
 
-> If the operational issue had been reduced by half, what would ARR have looked like?
+The original dashboard question has become a reasoning path.
 
-The original dashboard question has become a reasoning chain:
+```mermaid
+flowchart TB
+    A["Observation<br/>ARR fell 8%"]
+    B["KPI decomposition<br/>Which driver moved?"]
+    C["Dimensional attribution<br/>Who / where drove it?"]
+    D["Business events<br/>What actually happened?"]
+    E["Process behavior<br/>How did it happen?"]
+    F["Evidence-backed explanation<br/>What best explains the outcome?"]
+    G["Scenario<br/>What if a driver changes?"]
+    H["Decision / Action"]
 
-```text
-                         "ARR fell 8%"
-                               │
-                               ▼
-                       WHAT CHANGED?
-                               │
-                               ▼
-                          KPI DRIVERS
-                               │
-                               ▼
-                    WHERE / WHO DROVE IT?
-                               │
-                               ▼
-                     DIMENSIONAL CONTEXT
-                               │
-                               ▼
-                    WHAT ACTUALLY HAPPENED?
-                               │
-                               ▼
-                            EVENTS
-                               │
-                               ▼
-                     HOW DID IT HAPPEN?
-                               │
-                               ▼
-                       PROCESS BEHAVIOR
-                               │
-                               ▼
-                         WHY DID IT HAPPEN?
-                               │
-                               ▼
-                  EVIDENCE + RELATIONSHIPS
-                               │
-                               ▼
-                       WHAT IF WE CHANGE IT?
-                               │
-                               ▼
-                         SCENARIO MODEL
-                               │
-                               ▼
-                         DECISION / ACTION
+    A --> B --> C --> D --> E --> F --> G --> H
 ```
 
-This is a fundamentally different workload from producing a dashboard.
+**Figure 1.2 — From metric observation to decision.**
 
-It is not merely a harder SQL query.
-
-It requires several kinds of business information to remain connected.
+This is not merely a more complicated SQL query. Each step requires a different kind of meaning to remain connected to the others.
 
 ---
 
-## 1.2 Reporting asks for state; decision intelligence asks for evidence
+## 1.2 Reporting asks for state; decision intelligence asks for understanding, meaning, and evidence
 
 A conventional analytical question often asks for a state or aggregate:
 
@@ -164,27 +135,110 @@ Invoices outstanding
 Payroll cost by country
 ```
 
-A decision-intelligence question often asks for the evidence behind that state:
+Decision intelligence needs to go further. It needs three complementary foundations.
 
-```text
-What changed?
-What caused the change?
-Which business events contributed?
-Who participated in those events?
-What relationships were valid at the time?
-Did a process deviate from its normal path?
-Was the historical data later corrected?
-Which drivers are controllable?
-What happens if we change one of them?
+### Business understanding
+
+Business understanding describes **how the enterprise actually works**:
+
+- processes and lifecycle,
+- organizational ownership,
+- roles and responsibilities,
+- business rules,
+- commercial relationships,
+- operational dependencies,
+- and the meaning of transitions such as activation, churn, approval, correction, payment, or renewal.
+
+Without business understanding, a system may calculate correctly while interpreting the organization incorrectly.
+
+### Semantic meaning
+
+Semantic meaning tells the system **how data should be interpreted**:
+
+- what an entity represents,
+- what an event means,
+- how a metric is calculated,
+- which dimensions are valid for a metric,
+- how metrics aggregate through time,
+- how KPI drivers relate mathematically,
+- and which temporal interpretation applies.
+
+Without semantic meaning, the system has records and columns but no reliable model for reasoning about them.
+
+### Evidence
+
+Evidence tells the system **whether a particular inference is supported by what actually occurred**:
+
+- metric observations,
+- event records,
+- entity history,
+- relationship history,
+- process paths,
+- source lineage,
+- and revisions.
+
+Without evidence, the system may possess a sophisticated business model and still produce an unsupported explanation.
+
+```mermaid
+flowchart TB
+    subgraph F["Decision Intelligence Foundation"]
+        direction LR
+        B["Business Understanding<br/><br/>Processes · Lifecycle<br/>Rules · Ownership<br/>Organizational Context"]
+        S["Semantic Meaning<br/><br/>Entities · Events · Metrics<br/>KPI Relationships<br/>Temporal Semantics"]
+        E["Evidence<br/><br/>Metric Observations · Events<br/>History · Process Paths<br/>Revisions"]
+    end
+
+    B --> I["Supported Inference"]
+    S --> I
+    E --> I
+    I --> D["Decision"]
+
+    T["Temporal Context<br/>What was true? · What was known?"]
+    T -.-> B
+    T -.-> S
+    T -.-> E
 ```
 
-That distinction is important.
+**Figure 1.3 — Business understanding, semantic meaning, and evidence form the foundation for supported inference. Temporal context applies across all three.**
 
-A warehouse optimized only for the final analytical state may discard or obscure information that later becomes essential for explanation.
+A useful distinction is:
+
+> **Business understanding tells the system how the enterprise works. Semantic meaning tells it how the data should be interpreted. Evidence tells it whether a particular inference is supported. Temporal context ensures that all three are interpreted as they were true or known at the relevant point in time.**
+
+This distinction becomes concrete in the ARR example.
+
+**Business understanding** says that customers can start, expand, contract, and churn; that products belong to commercial arrangements; and that ownership, geography, and service relationships can influence outcomes.
+
+**Semantic meaning** says that one useful ARR bridge is:
+
+```text
+Ending ARR
+=
+Starting ARR
++ New ARR
++ Expansion ARR
+- Contraction ARR
+- Churn ARR
+```
+
+**Evidence** says that in this particular period:
+
+```text
+ARR movement          -₹8 Cr
+Churn contribution    -₹5 Cr
+```
+
+and allows the analysis to continue into the actual churn events, customers, participants, and process histories supporting that explanation.
+
+The distinction is crucial for AI. A language model can make data easier to query, but **natural-language access to a reporting model is not automatically decision intelligence**. The quality of an inference remains bounded by the business context, semantics, and evidence preserved underneath it.
+
+---
+
+## 1.3 The lifecycle is evidence, not operational noise
 
 Consider an invoice.
 
-A reporting model may ultimately care about:
+A reporting model may ultimately care about its final analytical state:
 
 ```text
 Invoice INV-123
@@ -193,207 +247,145 @@ Status      PAID
 Paid Date   25 Mar
 ```
 
-But operationally the invoice may have experienced this lifecycle:
+Operationally, however, the invoice may have experienced a lifecycle:
 
-```text
-20 Mar   invoice_created       ₹100,000
-21 Mar   invoice_approved      ₹100,000
-22 Mar   invoice_corrected      ₹95,000
-23 Mar   invoice_issued         ₹95,000
-25 Mar   invoice_paid           ₹95,000
+```mermaid
+flowchart LR
+    A["20 Mar<br/>Created<br/>₹100,000"] -->
+    B["21 Mar<br/>Approved<br/>₹100,000"] -->
+    C["22 Mar<br/>Corrected<br/>₹95,000"] -->
+    D["23 Mar<br/>Issued<br/>₹95,000"] -->
+    E["25 Mar<br/>Paid<br/>₹95,000"]
 ```
 
-The final state is correct.
+**Figure 1.4 — A transaction entity has a lifecycle composed of events.**
 
-But it cannot, by itself, answer:
+The final state is correct, but by itself it cannot answer:
 
-> How many invoices required correction before issue?
+- How many invoices required correction before issue?
+- Are corrected invoices taking longer to get paid?
+- Which teams, products, countries, or vendors are associated with repeated corrections?
+- How much working-capital delay is associated with those process variants?
 
-or:
+The lifecycle is therefore not incidental data around the analytical record. It is evidence about how the business produced the final state.
 
-> Are corrected invoices taking longer to get paid?
+This also introduces a distinction that will become important later in the book:
 
-or:
+> **An invoice is an entity. “Invoice corrected” is an event.**
 
-> Which teams, products, countries, or vendors are associated with repeated correction loops?
-
-or:
-
-> How much working-capital delay is associated with those process variants?
-
-The lifecycle is not noise around the analytical record. It is evidence.
+The noun persists. The verbs describe its history.
 
 ---
 
-## 1.3 The warehouse is becoming part of the reasoning system
+## 1.4 The warehouse is becoming part of the reasoning system
 
-Historically, the warehouse was often viewed as the place where data was prepared before reasoning happened elsewhere.
+Historically, the warehouse was often the place where data was prepared before reasoning happened elsewhere.
 
-```text
-Operational Systems
-        │
-        ▼
-    Warehouse
-        │
-        ▼
-   BI / Reports
-        │
-        ▼
- Human reasoning
+```mermaid
+flowchart LR
+    O["Operational Systems"] --> W["Warehouse"] --> BI["BI / Reports"] --> H["Human Reasoning"]
 ```
 
-The human analyst connected the dots.
+**Figure 1.5 — In a traditional analytical workflow, much of the semantic navigation happens in the analyst's head.**
 
-They knew that a drop in a metric should be decomposed into drivers. They knew which dashboard to open next. They knew which operational table contained the relevant transactions. They knew that ownership had changed in the middle of the quarter. They knew that a payroll amount had been corrected before payment and should not be interpreted as two independent payroll liabilities.
+The analyst knew which metric to decompose, which dashboard to open next, which operational table contained the relevant transactions, which owner had changed mid-quarter, and how a correction should be interpreted.
 
-Conversational analytics and analytical agents change this boundary.
+Conversational analytics and analytical agents move part of that reasoning into the system itself.
 
-The system itself is increasingly expected to navigate from observation to explanation.
-
-```text
-Business Question
-       │
-       ▼
-Semantic Resolution
-       │
-       ▼
-Metric / KPI
-       │
-       ▼
-Driver Decomposition
-       │
-       ▼
-Entities + Relationships
-       │
-       ▼
-Events / Process Evidence
-       │
-       ▼
-Explanation
-       │
-       ▼
-Scenario / Recommendation
+```mermaid
+flowchart LR
+    Q["Business Question"] --> SR["Semantic Resolution"] --> KPI["Metric / KPI"] --> DG["Driver Graph"] --> CTX["Business Context"] --> EV["Events / Process Evidence"] --> EX["Explanation"] --> SC["Scenario / Recommendation"]
 ```
 
-If the warehouse preserves only the final reporting shape, an AI system can still generate SQL against it. But **natural-language access to a dashboard model is not the same thing as decision intelligence**.
+**Figure 1.6 — AI-era analytics increasingly expects the system to navigate from question to evidence-backed explanation.**
 
-A language model can make querying easier without making the underlying evidence richer.
-
-The quality of the answer remains constrained by what the data model preserved.
+This does not mean the warehouse should become an AI model. It means the data foundation must preserve enough structure for reasoning systems to navigate business meaning without reconstructing it from disconnected artifacts every time.
 
 ---
 
-## 1.4 An example from global payroll
+## 1.5 A global payroll example
 
-Global payroll illustrates the problem particularly well because it combines lifecycle, money, people, geography, ownership, corrections, deadlines, providers, and regulatory context.
+Global payroll makes this problem especially visible because it combines lifecycle, money, people, geography, ownership, corrections, deadlines, providers, and regulatory context.
 
-Suppose payroll for a group of employees is initially processed on March 20:
+Suppose a payroll run is processed on March 20:
 
 ```text
 Payroll Run PR-2026-03-DE
 Processed amount = €100,000
 ```
 
-Two days later a validation step identifies an error. Payroll is recalculated:
+A validation step identifies an error. Payroll is corrected on March 22 and paid on March 25.
 
-```text
-22 Mar
-Corrected amount = €95,000
+```mermaid
+flowchart LR
+    A["20 Mar<br/>Payroll Processed<br/>€100,000"] -->
+    B["22 Mar<br/>Payroll Corrected<br/>€95,000"] -->
+    C["25 Mar<br/>Payroll Paid<br/>€95,000"]
 ```
 
-Payment occurs on March 25:
+**Figure 1.7 — A correction before payment is a sequence of valid business events, not simply an overwritten value.**
 
-```text
-Paid amount = €95,000
-```
-
-A reporting question might be:
+A reporting question may ask:
 
 > How much payroll was paid in Germany in March?
 
-Answer:
+Answer: **€95,000**.
 
-```text
-€95,000
-```
+But other questions are equally valid:
 
-But several other valid questions exist:
+> What amount was initially processed? — **€100,000**
 
-> What amount was initially processed?
+> How much was corrected? — **-€5,000**
 
-```text
-€100,000
-```
+> How long elapsed between initial processing and correction? — **2 days**
 
-> How much was corrected before payment?
+> Did correction happen before payment? — **Yes**
 
-```text
--€5,000
-```
-
-> How many days elapsed between initial processing and correction?
-
-```text
-2 days
-```
-
-> Did correction happen before payment?
-
-```text
-Yes
-```
+Then the investigation can continue:
 
 > Was this an isolated correction or part of a recurring process pattern?
 
-That question requires comparison with other payroll runs.
+> Is the pattern concentrated under a particular provider, country, client segment, payroll owner, or product configuration?
 
-> Is the correction pattern concentrated under a particular provider, country, client segment, payroll owner, or product configuration?
+> Did correction frequency increase operating cost or reduce payroll margin?
 
-That requires historically correct relationships between the payroll event and other business entities.
+The same underlying business history is serving reporting, audit, process mining, root-cause analysis, and financial decision-making.
 
-> Did correction frequency materially increase payroll operating cost or reduce margin?
-
-Now process behavior must be connected to KPI impact.
-
-The same underlying data is serving reporting, audit, process mining, root-cause analysis, and financial decision-making.
-
-A warehouse architecture designed only around the final paid amount is unnecessarily lossy for this broader workload.
+A canonical model that keeps only the final paid amount is unnecessarily lossy for those workloads.
 
 ---
 
-## 1.5 Time is more complicated than a date dimension
+## 1.6 Time is more complicated than a date dimension
 
-Decision intelligence also exposes a second problem: there is more than one kind of time.
+Decision intelligence exposes another problem: there is more than one kind of time.
 
-Imagine that an account appears to have been owned by Alice throughout February.
+Suppose an account appears to have been owned by Alice throughout February. On April 5, the source is corrected:
 
-On April 5, the source system is corrected:
+> Bob actually became the account owner effective February 15.
 
-> Bob actually became the account owner on February 15.
-
-Two statements are now simultaneously meaningful:
+Two statements are simultaneously meaningful:
 
 1. Bob was the effective owner on February 20.
 2. On March 1, the warehouse still believed Alice was the owner.
 
-These answer different questions.
+```mermaid
+flowchart LR
+    subgraph BT["Business / Effective Time"]
+        direction LR
+        A1["Jan 1"] --> A2["Alice"] --> A3["Feb 14"]
+        B1["Feb 15"] --> B2["Bob"] --> B3["Onward"]
+    end
 
-```text
-BUSINESS / EFFECTIVE TIME
-"Who was actually the owner on Feb 20?"
-
-                Bob
-
-KNOWLEDGE / REVISION TIME
-"Who did we believe was the owner
- when we reported on Mar 1?"
-
-                Alice
+    subgraph KT["Knowledge / Revision Time"]
+        direction LR
+        K1["Mar 1 report"] --> K2["Belief: Alice"]
+        K3["Apr 5 correction"] --> K4["Belief revised: Bob from Feb 15"]
+    end
 ```
 
-For ordinary current-state reporting, the distinction may not matter.
+**Figure 1.8 — Effective time describes when something was true; revision time describes when that truth was known or recorded.**
 
-For audit, reconciliation, historical attribution, model reproducibility, and AI explanation, it matters enormously.
+For current-state reporting, the distinction may sometimes be hidden. For audit, reconciliation, historical attribution, reproducibility, and AI explanation, it is essential.
 
 The same issue appears in metrics.
 
@@ -404,65 +396,59 @@ Alice-owned accounts   ₹10 Cr
 Bob-owned accounts      ₹5 Cr
 ```
 
-After the backdated ownership correction, the company-level ARR might still be ₹15 Cr, but the attribution changes.
+After the backdated ownership correction, company ARR might still be ₹15 Cr, but the attribution changes.
 
-The total did not change.
+The total did not change. The dimensional explanation did.
 
-The dimensional explanation did.
+The architecture therefore needs to distinguish:
 
-A decision-intelligence architecture must be able to distinguish a **value restatement** from a **dimensional restatement**.
+```text
+VALUE RESTATEMENT
+The measured value itself changed.
+
+DIMENSIONAL RESTATEMENT
+The value stayed the same, but its historical attribution changed.
+```
 
 ---
 
-## 1.6 Why simply adding more marts eventually becomes a problem
+## 1.7 Why simply adding more marts eventually becomes fragile
 
-Traditional warehouse architectures can support these requirements.
-
-One can add:
-
-- transaction facts,
-- periodic snapshots,
-- accumulating snapshots,
-- SCD2 dimensions,
-- bridge tables,
-- audit tables,
-- event stores,
-- process-mining extracts,
-- semantic models,
-- KPI metadata,
-- scenario tables,
-- lineage metadata,
-- and application-specific history tables.
+Traditional warehouse architectures can support all of these requirements. One can add transaction facts, periodic snapshots, accumulating snapshots, SCD2 dimensions, bridges, audit tables, event stores, process-mining extracts, semantic models, KPI metadata, scenario tables, lineage metadata, and application-specific history structures.
 
 There is nothing inherently wrong with doing so.
 
-The architectural question is whether these are independent structures that repeatedly reconstruct business meaning, or projections from a common semantic foundation.
+The architectural question is whether these structures repeatedly reconstruct business meaning independently, or whether they are projections from a common semantic foundation.
 
-Without a common foundation, an enterprise can gradually develop something like:
+```mermaid
+flowchart TB
+    S["Source Systems"]
+    BIW["BI Warehouse"]
+    PS["Process Store"]
+    AS["Audit / History Store"]
+    BIM["BI Model"]
+    PEM["Process Event Model"]
+    HM["History Model"]
+    AI["AI Semantic Model"]
 
-```text
-                    SOURCE SYSTEMS
-                         │
-          ┌──────────────┼───────────────┐
-          ▼              ▼               ▼
-      BI Warehouse   Process Store   Audit Store
-          │              │               │
-          ▼              ▼               ▼
-       BI Model      Event Model     History Model
-          │                              │
-          └──────────────┐   ┌───────────┘
-                         ▼   ▼
-                     AI Semantic
-                        Model
+    S --> BIW
+    S --> PS
+    S --> AS
+    BIW --> BIM
+    PS --> PEM
+    AS --> HM
+    BIM --> AI
+    PEM --> AI
+    HM --> AI
 ```
 
-Each layer may be individually sensible, but definitions of identity, time, relationships, and business events can drift.
+**Figure 1.9 — When analytical, process, audit, and AI models evolve independently, identity, time, relationship, and metric semantics can drift.**
 
 The Temporal Semantic Warehouse asks a different question:
 
-> What is the smallest canonical set of constructs from which these consumption models can be generated without losing the evidence required by the others?
+> What canonical business constructs should be preserved so that these consumption models can be generated without repeatedly reconstructing meaning or discarding evidence needed by another workload?
 
-The answer developed through this book is:
+The answer developed through this book is built progressively around:
 
 ```text
 Entities
@@ -472,172 +458,30 @@ Metric History
 KPI / Driver Semantics
 ```
 
-Not every implementation needs every construct on day one. The point is that they form a coherent semantic system rather than unrelated analytical add-ons.
+Not every implementation needs every construct on day one. The important point is that they form a coherent semantic system rather than unrelated analytical add-ons.
 
 ---
 
-## 1.7 The canonical model should preserve truth; projections should optimize consumption
+## 1.8 Canonical truth and consumption models are different responsibilities
 
-This leads to one of the central principles of the framework:
+A star schema is an excellent interface for many BI workloads.
 
-> **Canonical modeling and consumption modeling are different responsibilities.**
+A canonical event projection is an excellent interface for process mining.
 
-A star schema is an excellent consumption model for many BI workloads.
+A KPI graph is an excellent interface for driver reasoning and simulation.
 
-A canonical event stream is an excellent representation for process analysis.
+A governed semantic model is an excellent interface for conversational analytics.
 
-A KPI graph is an excellent representation for driver reasoning and simulation.
+These facts do not require the enterprise's canonical representation to be stored in one of those consumption shapes.
 
-A semantic model is an excellent interface for governed conversational analytics.
-
-None of those facts require the entire enterprise to be stored canonically in the same shape.
-
-Instead:
-
-```text
-                         CANONICAL MODEL
-
-                    Entities + Events
-                           │
-                           ▼
-                    Temporal Context
-                           │
-                           ▼
-                      Metric History
-                           │
-        ┌──────────────────┼──────────────────┐
-        ▼                  ▼                  ▼
-   Dimensional         Semantic          Event / Process
-   Projection          Projection          Projection
-        │                  │                  │
-        ▼                  ▼                  ▼
-       BI           Conversational AI     Process Mining
-```
-
-The dimensional projection can be deliberately boring.
-
-That is a feature.
-
-The framework is not trying to make every BI consumer understand a temporal graph.
-
-It is trying to avoid making the temporal graph impossible to reconstruct because the canonical model discarded it too early.
-
----
-
-## 1.8 From descriptive analytics to a decision loop
-
-A useful way to understand the evolution is through analytical maturity.
-
-```text
-DESCRIPTIVE
-What happened?
-      │
-      ▼
-DIAGNOSTIC
-Why did it happen?
-      │
-      ▼
-PREDICTIVE
-What is likely to happen?
-      │
-      ▼
-PRESCRIPTIVE
-What should we do?
-      │
-      ▼
-SIMULATIVE
-What happens if we change X?
-      │
-      ▼
-AGENTIC
-Can the system continuously observe,
-diagnose, propose and execute within policy?
-```
-
-The Temporal Semantic Warehouse is primarily concerned with the data foundation underneath this loop.
-
-It does not claim that a warehouse alone provides causal inference, forecasting, optimization, or autonomous decision-making.
-
-That distinction matters.
-
-A KPI tree can encode a known business relationship without proving statistical causality. An event sequence can provide evidence without proving that one event caused another. A process correlation can identify a suspicious operational pattern without establishing a scientific causal mechanism.
-
-The architecture's job is more foundational:
-
-> Preserve and connect enough evidence that analytical and AI systems can reason transparently rather than reconstructing context from disconnected tables after the fact.
-
----
-
-## 1.9 The six questions the model must answer
-
-The remainder of the book can be understood through six questions.
-
-### What happened?
-
-Events preserve business occurrences and transitions.
-
-### Who or what was involved?
-
-Entities provide identity. Event participation and relationships connect the relevant actors and objects.
-
-### Where and under what context did it happen?
-
-Temporal relationships preserve the dimensional and organizational context that was valid at the relevant time.
-
-### How much changed?
-
-Event measures and metric time series preserve quantitative state and movement.
-
-### Why did the outcome move?
-
-KPI/driver graphs provide mathematical and business decomposition; the temporal bus provides contextual attribution; events provide operational evidence; process mining provides execution-path evidence.
-
-### What happens if we change something?
-
-Scenario semantics propagate assumptions through the KPI graph while preserving a clear distinction between actuals, forecasts, targets, and simulated values.
-
-A seventh question cuts across all six:
-
-### What did we know when?
-
-Revision semantics preserve the history of corrections and recalculations.
-
-Together:
-
-```text
-WHAT?       → Events
-WHO?        → Entities + participation
-WHERE?      → Entities + temporal relationships
-WHEN?       → Event time + effective time
-HOW MUCH?   → Measures + Metric Time Series
-WHY?        → KPI graph + Bus + Events + Process
-WHAT IF?    → Scenario graph
-KNOWN WHEN? → Revision time
-```
-
-This is the reasoning surface the framework is intended to provide.
-
----
-
-## 1.10 What this book is — and is not — proposing
-
-The Temporal Semantic Warehouse is **not** proposing that:
-
-- dimensional modeling should be abandoned,
-- every query should traverse a generic graph,
-- all events should live forever in one giant EAV table,
-- every relationship should be placed in one universal bus,
-- every metric should be physically materialized,
-- AI can infer reliable causality merely because events are available,
-- or one physical implementation is optimal for every database engine.
-
-Instead, the framework proposes several separations of concern:
-
-```text
-Canonical truth        ≠ Consumption projection
-Business time          ≠ Knowledge / revision time
-Entity                 ≠ Event
-Transaction entity     ≠ Transaction event
-Relationship history   ≠ Entity attribute history
-Primitive metric       ≠ Derived semantic metric
-Evidence
+```mermaid
+flowchart TB
+    subgraph C["Canonical Business Model"]
+        EN["Entities"]
+        EV["Events"]
+        TB["Temporal Relationships"]
+        MH["Metric History"]
+        KG["KPI / Driver Semantics"]
+        EN --> TB
+        EV --> TB
+       
