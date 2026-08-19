@@ -6,7 +6,7 @@
 
 Enterprise warehouse architectures were largely designed for a world in which the primary job of analytical data was to **report and aggregate what happened**. Inmon provides a durable integrated enterprise model, Kimball makes business analytics intuitive through facts and dimensions, and Data Vault provides powerful historization and source-aligned change capture. Those strengths remain valuable. But decision intelligence in the AI era asks a broader chain of questions: **What changed? Who and what participated? What relationships were true when it happened? Why did a KPI move? Which operational events and process paths produced that movement? What did we believe before a backdated correction? What happens if a driver changes?** Existing models can support many of these questions, but often only through additional marts, snapshots, bridges, audit structures, process stores, semantic models, and application-specific logic layered around the warehouse. The Temporal Semantic Warehouse proposes making the information needed for those questions part of the canonical model itself: **entities preserve identity and state; events preserve business transitions; a temporal bus preserves relationships and participation through time; metric time series preserve measurements and their revisions; and KPI/driver graphs connect those measurements to explanation and simulation.** Dimensional models, semantic models, process views, and AI-facing structures then become generated consumption projections rather than competing sources of truth.
 
-The objective is therefore not to replace Inmon, Kimball, or Data Vault with another universal physical schema. It is to preserve enough **business truth, temporal context, and causal evidence** in the canonical warehouse that different consumers can receive the representation they need without discarding information required by others.
+The objective is therefore not to replace Inmon, Kimball, or Data Vault with another universal physical schema. It is to preserve enough **business truth, temporal context, and supporting evidence** in the canonical warehouse that different consumers can receive the representation they need without discarding information required by others.
 
 ```text
 Traditional analytical question
@@ -25,7 +25,7 @@ Decision-intelligence questions
     "Which customers, products,
      owners and regions drove it?"
              │
-    "What events caused the movement?"
+    "What events contributed to the movement?"
              │
     "Did those events share a
      problematic process path?"
@@ -100,11 +100,11 @@ The framework does not reject dimensional modeling. It treats star schemas and o
 
 ## Book
 
-The book is being developed under [`book/`](book/README.md).
+The published book is built with **mdBook** from the [`src/`](src/) directory. The table of contents and navigation are maintained in [`src/SUMMARY.md`](src/SUMMARY.md).
 
-Its working title is **The Temporal Semantic Warehouse: A Decision Intelligence Architecture for the AI Era**.
+Start with the [cover and introduction](src/introduction.md) or [Chapter 1 — From Reporting to Decision Intelligence](src/01-from-reporting-to-decision-intelligence.md).
 
-The manuscript compares the framework in depth with **Inmon**, **Kimball**, and **Data Vault**, then develops the model progressively through concrete business scenarios including customer lifecycle, ARR, invoices, ownership changes, and global payroll.
+The manuscript compares the framework in depth with **Inmon**, **Kimball**, and **Data Vault**, then develops the model progressively through concrete business scenarios including customer lifecycle, ARR, invoices, ownership changes, global payroll, support, collections, logistics, and supply chain.
 
 ## Core ontology
 
