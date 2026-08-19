@@ -41,96 +41,99 @@ This contents page is intentionally curated as a **book outline**, not a dump of
 
 13. **Effective Time, Recorded Time, and Corrections**
 
-14. **Entity Lifecycle and Change Semantics**  
+14. **Normalizing Source History: SCD1, SCD2, Audit/Envers, CDC, and Snapshots**  
+   How the framework ingests sources with very different history guarantees and converts them into one canonical temporal contract. SCD1 sources provide current state but require warehouse-side change detection; SCD2 sources already contain effective history; audit/Envers sources contain revision history; CDC sources provide row-level operations; append-only event sources already provide occurrence history; snapshot-only sources require comparison across extracts. The framework preserves source semantics instead of assuming every source behaves the same way.
+
+15. **Entity Lifecycle and Change Semantics**  
    Insert, update, deactivate, merge, split, source deletion, resurrection, source-system conflict, soft delete versus hard delete, and how lifecycle state should be represented without losing historical meaning.
 
-15. **Event Lifecycle, Restatement, and Supersession**  
+16. **Event Lifecycle, Restatement, and Supersession**  
    When an event is immutable, when a new event corrects a previous business event, when an event must be historically restated from an effective date, and how supersession differs from physical deletion.
 
 ## Part IV — Measurements Through Time
 
-16. **From Events to Metric Time Series**
+17. **From Events to Metric Time Series**
 
-17. **State, Flow, Counts, Ratios, and Temporal Rollups**
+18. **State, Flow, Counts, Ratios, and Temporal Rollups**
 
-18. **Metric Revisions and the Append-Only Ledger**
+19. **Metric Revisions and the Append-Only Ledger**
 
-19. **Backdated Ownership: A Dimensional Restatement**
+20. **Backdated Ownership: A Dimensional Restatement**
 
-20. **Payroll Correction: A Business Transition**
+21. **Payroll Correction: A Business Transition**
 
-21. **Late-Arriving Facts, Events, and Dimensions**  
+22. **Late-Arriving Facts, Events, and Dimensions**  
    Event-time versus arrival-time semantics, watermarks, missing context, deferred enrichment, replay, and how late data changes historical metric and dimensional attribution.
 
-22. **Restatement Windows and Impact Propagation**  
+23. **Restatement Windows and Impact Propagation**  
    Recalculate from one event, one effective date, one entity version, or one affected metric slice without rebuilding the entire warehouse.
 
 ## Part V — Decision Intelligence
 
-23. **KPI Trees and Driver Graphs**  
+24. **KPI Trees and Driver Graphs**  
     Decomposition, driver semantics, leading and lagging indicators, controllable versus observed drivers, and graph-based metric reasoning.
 
-24. **Root-Cause Analysis**  
+25. **Root-Cause Analysis**  
     From metric movement to driver decomposition, dimensional attribution, event evidence, process evidence, and supported inference.
 
-25. **What-If and Scenario Analysis**  
+26. **What-If and Scenario Analysis**  
     Propagating assumptions through KPI graphs while keeping actuals, targets, forecasts, and simulations distinct.
 
-26. **Process Mining from Canonical Events**  
+27. **Process Mining from Canonical Events**  
     Case construction, variants, cycle time, waiting time, loops, rework, conformance, and SLA analysis.
 
-27. **Connecting Process Behavior to KPI Impact**  
+28. **Connecting Process Behavior to KPI Impact**  
     Moving from “this process path is unusual” to “this process path materially affects a business outcome.”
 
-28. **Conversational Analytics**  
+29. **Conversational Analytics**  
     Beyond natural-language-to-SQL: semantic resolution, KPI navigation, temporal context, evidence retrieval, and follow-up reasoning.
 
-29. **Agentic Analytics and Decision Workflows**
+30. **Agentic Analytics and Decision Workflows**
 
-30. **Evidence, Explainability, and Audit**
+31. **Evidence, Explainability, and Audit**
 
 ## Part VI — Consumption Without Canonical Compromise
 
-31. **Dimensional Projections for BI**
+32. **Dimensional Projections for BI**
 
-32. **Semantic Models for Governed Analytics**
+33. **Semantic Models for Governed Analytics**
 
-33. **Typed Projections and Avoiding Generic-Model Syndrome**
+34. **Typed Projections and Avoiding Generic-Model Syndrome**
 
 ## Part VII — The Framework and Compiler
 
-34. **YAML as a Declarative Business Contract**
+35. **YAML as a Declarative Business Contract**
 
-35. **Compiler Intermediate Representation**
+36. **Compiler Intermediate Representation**
 
-36. **SQL Generation and Dependency Analysis**
+37. **SQL Generation and Dependency Analysis**
 
-37. **Correction Propagation and Recalculation**
+38. **Correction Propagation and Recalculation**
 
-38. **Batch, Micro-Batch, and Streaming as One Semantic Model**  
+39. **Batch, Micro-Batch, and Streaming as One Semantic Model**  
    The same entity, event, bus, metric, and revision contracts under continuous streaming, scheduled micro-batches, and periodic batch processing; event-time ordering, idempotency, replay, and exactly-once semantics as implementation concerns rather than modeling assumptions.
 
-39. **Change Capture, Replay, and Idempotent Processing**  
+40. **Change Capture, Replay, and Idempotent Processing**  
    CDC where available, source snapshots where it is not, deterministic event identity, duplicate handling, checkpoints, and replay-safe compilers.
 
-40. **Engine-Neutral Semantics**
+41. **Engine-Neutral Semantics**
 
-41. **Physical Strategies: Delta, Iceberg, Postgres, DuckDB, MySQL, and ClickHouse**
+42. **Physical Strategies: Delta, Iceberg, Postgres, DuckDB, MySQL, and ClickHouse**
 
 ## Part VIII — Putting It Together
 
-42. **End-to-End Global Payroll Example**
+43. **End-to-End Global Payroll Example**
 
-43. **End-to-End ARR and Customer Lifecycle Example**
+44. **End-to-End ARR and Customer Lifecycle Example**
 
-44. **End-to-End Change Scenario: Delete, Late Event, Backfill, and Restatement**  
+45. **End-to-End Change Scenario: Delete, Late Event, Backfill, and Restatement**  
    A single worked example showing how one source deletion and one late/backdated event propagate through entity history, bus revisions, metric revisions, semantic projections, and audit.
 
-45. **Architecture Patterns and Anti-Patterns**
+46. **Architecture Patterns and Anti-Patterns**
 
-46. **Scoring the Models by Workload**
+47. **Scoring the Models by Workload**
 
-47. **Design Principles**
+48. **Design Principles**
 
 ## Appendices
 
@@ -139,3 +142,4 @@ This contents page is intentionally curated as a **book outline**, not a dump of
 - **C. Terminology**
 - **D. Reference Implementation Notes**
 - **E. Lifecycle and Restatement State Machines**
+- **F. Source History Adapter Patterns**
