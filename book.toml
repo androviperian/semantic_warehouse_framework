@@ -1,0 +1,27 @@
+[book]
+title = "The Temporal Semantic Warehouse"
+authors = ["Jeganathan Velu"]
+description = "A Decision Intelligence Architecture for the AI Era"
+language = "en"
+src = "src"
+
+[build]
+build-dir = "site"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/androviperian/semantic_warehouse_framework"
+additional-css = ["custom.css"]
+additional-js = ["mermaid-init.js"]
+no-section-label = false
+site-url = "/semantic_warehouse_framework/"
+
+[output.html.search]
+enable = true
+limit-results = 30
+use-boolean-and = true
+boost-title = 2
+expand = true
+heading-split-level = 2
